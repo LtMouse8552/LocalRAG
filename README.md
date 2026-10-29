@@ -1,73 +1,56 @@
-# LocalRAG — 本地知识库 · 私有 AI 问答
+# LocalRAG
 
-暗色科技风 + 克制液态玻璃效果的「本地知识库 RAG 问答系统」前端。基于 Mock 数据全流程演示：文档上传 → 索引解析 → 问答 → 引用溯源。
+本地知识库 · 私有 AI 问答 —— 上传你的文档，让本地模型基于资料回答，数据不出设备，全程离线运行。
 
-![stack](https://img.shields.io/badge/React_18-TypeScript-22D3EE) ![vite](https://img.shields.io/badge/Vite_5-Tailwind_3-7C3AED)
+深色科技风格的前端界面（暗色 + 玻璃拟态 / 液态高光设计），围绕「本地模型 + 文档问答」场景构建的完整 Web UI。
 
-## 运行
+## ✨ 核心特性
+
+- 🔒 **本地模型**：Qwen2.5 7B 运行在本机，推理不出设备
+- 📄 **文档问答**：上传 PDF / Word / Markdown，基于资料回答
+- 🔖 **引用溯源**：每个回答附带编号引用，可定位原文
+- 📡 **完全离线**：无网络依赖，数据永不上传
+- 🎨 **液态玻璃 UI**：暗色科技风 + 玻璃拟态组件（Liquid Glass 风格高光）
+- ⌨️ **快捷键支持**：内置快捷键面板，高效操作
+
+## 🗂 页面结构
+
+| 路由 | 页面 | 说明 |
+| --- | --- | --- |
+| `/` | Home | 产品首页，功能总览 |
+| `/chat` | Chat | 问答工作台（流式回复 + 引用卡片） |
+| `/knowledge` | Knowledge | 知识库管理 |
+| `/documents/:id` | DocumentDetail | 文档详情 |
+| `/settings` | Settings | 设置 |
+| `/profile` | Profile | 个人资料 |
+| `/shortcuts` | Shortcuts | 快捷键一览 |
+
+## 🛠 技术栈
+
+- **框架**：React 18 + TypeScript + Vite
+- **路由**：React Router v6
+- **状态管理**：Zustand + TanStack Query
+- **样式**：Tailwind CSS + PostCSS
+- **图标**：lucide-react
+
+## 🚀 快速开始
 
 ```bash
+# 安装依赖
 npm install
-npm run dev        # http://127.0.0.1:5173 （仅本地，不暴露公网）
-npm run build      # 产物输出至 dist/
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 预览构建结果
 npm run preview
 ```
 
-## 目录结构
+> 当前版本使用 `src/mock/` 下的模拟数据演示界面与交互，可对接本地 Ollama 等后端接入真实推理（参见姊妹项目 `qwen3.5-0.8b_local`）。
 
-```
-src/
-├── main.tsx / App.tsx        # 入口与路由（8 个页面 + /m/chat 移动端）
-├── index.css                 # 设计系统：色彩令牌、6 个玻璃类、动态高光、降级与响应式
-├── types.ts                  # KnowledgeBase/KbDoc/Conversation/Citation/RagSettings 类型
-├── mock/
-│   ├── data.ts               # 知识库/文档/会话/引用/回答语料 Mock
-│   └── stream.ts             # 模拟 RAG 流式输出（检索 900ms → 逐字输出，可 stop）
-├── store/useStore.ts         # Zustand + persist（会话持久化到 localStorage）
-├── components/
-│   ├── glass/                # GlassPanel/Card/Toolbar/Modal/Input/Button + LiquidHighlight
-│   ├── TopBar.tsx            # 全局顶栏（glass-toolbar）
-│   ├── MessageItem.tsx       # 消息渲染：轻量 Markdown + 引用角标 + 悬停操作
-│   ├── Composer.tsx          # 输入区：附件/知识库开关/发送↔停止/上下文超限提示
-│   ├── SourceCard.tsx        # 引用卡片：相似度进度条 + 关键词高亮 + 展开
-│   ├── ShortcutsModal.tsx    # 快捷键弹窗（Ctrl+/ 全局唤起）
-│   └── Kbd.tsx / VersionBadge.tsx
-└── pages/                    # Home / Knowledge / Chat / DocumentDetail / Profile / Settings / About / Shortcuts
-```
+## 📄 许可证
 
-## 依赖裁剪说明（相对原始需求清单）
-
-为保持零依赖可用、`npm install && npm run dev` 直接跑通，做了如下替换——接口一致，后续可平滑升级：
-
-| 需求原案 | 实际实现 | 说明 |
-|---|---|---|
-| shadcn/ui + radix 体系 | 自研玻璃组件库 `components/glass/` | 视觉即设计系统本身，避免 30+ 间接依赖 |
-| Dexie / IndexedDB | Zustand `persist` → localStorage | 数据量小时等价；换 Dexie 只需改 store 持久化层 |
-| react-markdown + remark-gfm + Shiki | `MessageItem.renderMarkdown` 轻量渲染器 | 支持标题/列表/表格/代码块/引用/角标；Shiki 待接入 |
-| PDF.js | 文档详情页静态预览 | 接入时替换 `DocumentDetail` 左栏 |
-| framer-motion | CSS 动画（fadeUp/dotJump/pulseGlow） | 全部动效 ≤200ms，无运行时开销 |
-| TanStack Query | 直连 store（纯前端 mock） | 接真实后端时再加 |
-
-## 核心交互
-
-- **流式输出**：逐字出现 + 青色光标 1s 闪烁；生成中发送按钮变红色停止（Esc 亦可）
-- **引用联动**：点击 AI 消息中的 `[1]` 角标 → 右栏对应卡片 active 高亮并滚动定位；点击卡片 → 文档详情页
-- **上传模拟**：拖拽/点击上传 → 解析进度条 → 已索引；失败状态可重试
-- **快捷键**：`Ctrl+K` 搜索会话、`Ctrl+N` 新建、`Ctrl+/` 快捷键帮助、`Ctrl+B/J` 折叠左右栏
-
-## 玻璃效果与降级
-
-- 玻璃仅用于容器/悬浮层/工具栏/输入区；AI 正文、代码块为实色，保证可读性
-- 同屏 `backdrop-filter` ≤ 6 个；不支持的浏览器经 `@supports` 回退为 `#111820` 实色
-- 响应式降 blur：≤1024px→14px、≤767px→12px；`prefers-reduced-motion` 关闭动态高光与动画
-
-## 响应式断点
-
-| 宽度 | 布局 |
-|---|---|
-| ≥1280px | 三栏完整（260 / 自适应 / 320） |
-| 1024–1280px | 右栏折叠（`max-xl:hidden`，Ctrl+J 呼出） |
-| 768–1024px | 左栏变抽屉浮层 |
-| <768px | 单栏聊天 |
-
-> 本项目为纯前端 Mock 演示，接入真实 RAG 后端时替换 `mock/stream.ts` 为 fetch + ReadableStream 即可。
+仅供学习交流使用。
